@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Scan, solve, play and learn Rubik's cubes.",
+  "description": "Scan, solve, play and learn puzzle cubes.",
   "scripts": {
     "serve": "python -m http.server 8766 --directory www",
     "sync": "npx cap sync",

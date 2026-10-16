@@ -1,7 +1,7 @@
 {
   "name": "Cube Coach",
   "short_name": "Cube Coach",
-  "description": "Scan, solve, play and learn Rubik's cubes.",
+  "description": "Scan, solve, play and learn puzzle cubes.",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#0e1115",
