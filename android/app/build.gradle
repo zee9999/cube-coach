@@ -1,5 +1,12 @@
 apply plugin: 'com.android.application'
 
+// Release signing: CI passes CC_* environment variables; locally, android/keystore.properties
+// (never committed) can hold storeFile, storePassword, keyAlias, keyPassword.
+def keystoreProps = new Properties()
+def keystorePropsFile = rootProject.file('keystore.properties')
+if (keystorePropsFile.exists()) keystorePropsFile.withInputStream { keystoreProps.load(it) }
+def signingValue = { String key, String env -> System.getenv(env) ?: keystoreProps.getProperty(key) }
+
 android {
     namespace = "com.cubecoach.app"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -7,8 +14,9 @@ android {
         applicationId "com.cubecoach.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        // Every Play upload needs a higher versionCode; CI uses the run number.
+        versionCode((System.getenv('CC_VERSION_CODE') ?: '1') as int)
+        versionName "1.0.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -16,8 +24,20 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            def storePath = signingValue('storeFile', 'CC_KEYSTORE_PATH')
+            if (storePath) {
+                storeFile file(storePath)
+                storePassword signingValue('storePassword', 'CC_KEYSTORE_PASSWORD')
+                keyAlias signingValue('keyAlias', 'CC_KEY_ALIAS')
+                keyPassword signingValue('keyPassword', 'CC_KEY_PASSWORD')
+            }
+        }
+    }
     buildTypes {
         release {
+            if (signingConfigs.release.storeFile) signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }

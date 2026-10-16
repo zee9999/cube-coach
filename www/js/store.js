@@ -6,7 +6,9 @@ import { data, update, addCoins, toast } from './state.js';
 const cap = window.Capacitor;
 const platform = cap?.getPlatform?.() || 'web';
 const apiKey = platform === 'ios' ? CONFIG.revenueCatKeyIOS : platform === 'android' ? CONFIG.revenueCatKeyAndroid : '';
-export const mode = cap?.isNativePlatform?.() && apiKey ? 'native' : 'demo';
+const isNative = !!cap?.isNativePlatform?.();
+// native = real store billing; unconfigured = app build without keys (no purchases); demo = website
+export const mode = isNative ? (apiKey ? 'native' : 'unconfigured') : 'demo';
 let Purchases = null;
 const products = {}; // key -> store product (native)
 
@@ -46,6 +48,7 @@ export async function buy(key, confirmDemo) {
       return false;
     }
   }
+  if (mode === 'unconfigured') { toast('Purchases aren’t switched on in this test build yet.'); return false; }
   const ok = await confirmDemo(def, priceOf(key));
   if (!ok) return false;
   if (key === 'pro') update(d => { d.pro = true; });

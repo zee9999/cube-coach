@@ -1,0 +1,54 @@
+name: Android build
+# Builds a test APK (install it on your phone) and, once the upload key secrets exist,
+# a signed release bundle (.aab) for Google Play. Run it from the Actions tab or by pushing.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['www/**', 'android/**', 'package.json', 'capacitor.config.json', '.github/workflows/android.yml']
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    env:
+      HAS_KEY: ${{ secrets.CC_KEYSTORE_BASE64 != '' }}
+      CC_VERSION_CODE: ${{ github.run_number }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+      - run: npm ci
+      - run: npx cap sync android
+      - name: Test APK
+        working-directory: android
+        run: chmod +x gradlew && ./gradlew --no-daemon assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cube-coach-test-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
+      - name: Signed release bundle
+        if: env.HAS_KEY == 'true'
+        working-directory: android
+        env:
+          CC_KEYSTORE_PASSWORD: ${{ secrets.CC_KEYSTORE_PASSWORD }}
+          CC_KEY_ALIAS: ${{ secrets.CC_KEY_ALIAS }}
+          CC_KEY_PASSWORD: ${{ secrets.CC_KEY_PASSWORD }}
+        run: |
+          echo "${{ secrets.CC_KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/upload.jks"
+          CC_KEYSTORE_PATH="$RUNNER_TEMP/upload.jks" ./gradlew --no-daemon bundleRelease
+          rm -f "$RUNNER_TEMP/upload.jks"
+      - uses: actions/upload-artifact@v4
+        if: env.HAS_KEY == 'true'
+        with:
+          name: cube-coach-release-aab
+          path: android/app/build/outputs/bundle/release/app-release.aab
+          retention-days: 30

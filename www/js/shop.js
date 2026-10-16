@@ -19,6 +19,7 @@ function preview(item) {
 
 export function renderShop() {
   $('shopMode').hidden = mode === 'native';
+  $('shopMode').textContent = mode === 'unconfigured' ? 'Test build: purchases are switched off until the store is set up.' : 'Demo mode on the website: purchases are simulated and nothing is charged.';
   $('proPrice').textContent = data.pro ? 'Active' : priceOf('pro');
   $('proBtn').disabled = data.pro;
   $('proBtn').textContent = data.pro ? 'You have Pro' : `Get Pro · ${priceOf('pro')}`;
