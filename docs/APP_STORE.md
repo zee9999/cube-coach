@@ -1,0 +1,55 @@
+# Cube Coach: app store release checklist
+
+The app is a web app (`www/`) wrapped by Capacitor 8 into native projects (`android/`, `ios/`).
+Purchases go through RevenueCat (Apple and Google billing underneath). Ads use Google AdMob.
+Everything below that says **you** needs your accounts or your machine; the code is already wired.
+
+## 1. Accounts (you)
+| What | Cost | Needed for |
+|---|---|---|
+| Apple Developer Program | $99/year | iOS App Store |
+| Google Play Console | $25 once | Android |
+| RevenueCat | free tier | purchases on both stores |
+| Google AdMob | free | ads |
+
+## 2. Identity
+- App id / bundle id: `com.cubecoach.app` (in `capacitor.config.json`). Change it now if you want your own domain-style id; it can't change after the first upload.
+- Name: Cube Coach. Icon source: `resources/icon.png` (already placed in both native projects).
+
+## 3. In-app products (you, in both stores, same ids)
+| Product id | Type | Suggested price |
+|---|---|---|
+| `cubecoach_pro` | Non-consumable | $2.99 |
+| `cubecoach_coins_1000` | Consumable | $0.99 |
+
+Then in RevenueCat: add both apps, import the products, create an entitlement called `pro` and attach `cubecoach_pro` to it.
+Paste the two public SDK keys into `www/js/config.js` (`revenueCatKeyIOS`, `revenueCatKeyAndroid`).
+Until the keys are set, the app runs the shop in demo mode (nothing charged).
+
+## 4. Ads (you)
+- Create an AdMob app for iOS and one for Android, plus a banner and an interstitial unit for each.
+- Replace the test ids in `www/js/config.js` and set `admob.testing` to `false`.
+- Replace the test **app** ids in `android/app/src/main/AndroidManifest.xml` (`com.google.android.gms.ads.APPLICATION_ID`)
+  and `ios/App/App/Info.plist` (`GADApplicationIdentifier`).
+- Never click your own live ads; keep `testing: true` while developing.
+
+## 5. Build
+After any change in `www/`, run `npx cap sync`.
+
+**Android (works on this Windows PC):** install Android Studio, then `npx cap open android`, then Build > Generate Signed Bundle (AAB). Keep the keystore file and password safe: you need the same key for every update.
+
+**iOS (needs macOS):** Xcode only runs on a Mac. Options: borrow or rent a Mac (e.g. MacinCloud), or use a cloud build service such as Codemagic or Ionic Appflow with this repository. In Xcode: `npx cap open ios`, set your Team under Signing, then Product > Archive > Distribute.
+
+## 6. Store listing (you)
+- Privacy policy URL: https://zee9999.github.io/cube-coach/privacy.html
+- Privacy labels / Data safety: camera used on device only, not collected. AdMob collects device identifiers for ads (declare "Identifiers" and "Usage data" for advertising). Purchases via the store.
+- Age rating: no objectionable content. Mark "contains ads" and "in-app purchases".
+- Screenshots: Solve (scan grid), Solve (3D move), Play (5x5), Learn (lesson), Shop.
+- Review notes for Apple: "Camera is used to read cube colors. Use 'Try a random scramble' on the Solve tab to test without a cube."
+
+## 7. Already handled in code
+- Camera permission text (iOS) and permission (Android).
+- App Tracking Transparency prompt before ads on iOS; tracking description in Info.plist.
+- Restore purchases button (required by Apple) in the Shop tab.
+- Pro removes all ads; ads are never shown on the Solve tab while scanning.
+- Works offline: three.js and the solver are bundled in `www/vendor/`.

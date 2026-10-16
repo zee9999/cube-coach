@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Cube Coach</string>
+    <string name="title_activity_main">Cube Coach</string>
+    <string name="package_name">com.cubecoach.app</string>
+    <string name="custom_url_scheme">com.cubecoach.app</string>
+</resources>

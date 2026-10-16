@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0e1115">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="description" content="Scan your Rubik's cube with the camera and follow an animated solution. Play 2x2 to 7x7 cubes, learn with step-by-step lessons.">
+<title>Cube Coach</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500;700&family=Unbounded:wght@600;700&display=swap">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">
+        <i style="background:var(--c-white)"></i><i style="background:var(--c-red)"></i><i style="background:var(--c-green)"></i>
+        <i style="background:var(--c-blue)"></i><i style="background:var(--c-yellow)"></i><i style="background:var(--c-orange)"></i>
+        <i style="background:var(--c-green)"></i><i style="background:var(--c-white)"></i><i style="background:var(--c-red)"></i>
+      </div>
+      <h1>Cube Coach</h1>
+      <span class="badge" id="proBadge" hidden>Pro</span>
+    </div>
+    <button class="coin-chip" id="coinChip" aria-label="Coins, open the shop"><span class="coin" aria-hidden="true"></span><span id="coinCount">0</span></button>
+  </header>
+
+  <!-- ============ SOLVE ============ -->
+  <section id="tab-solve" class="tab">
+    <div class="row split">
+      <div class="seg" id="sizeToggle" role="group" aria-label="Cube size">
+        <button data-n="3" aria-pressed="true">3&times;3</button>
+        <button data-n="2" aria-pressed="false">2&times;2</button>
+      </div>
+      <div class="status" id="solverStatus"><span class="dot"></span><span id="solverText">Preparing solver</span></div>
+    </div>
+    <nav class="steps" aria-label="Steps">
+      <button id="nav-scan" aria-current="step"><span>1</span>Scan</button>
+      <button id="nav-check" disabled><span>2</span>Check</button>
+      <button id="nav-solve" disabled><span>3</span>Solve</button>
+    </nav>
+
+    <div class="screen" id="screen-scan">
+      <div class="card">
+        <p class="eyebrow" id="scanEyebrow">Face 1 of 6</p>
+        <h2 id="scanTitle">Front</h2>
+        <p id="scanHow" class="small"></p>
+        <div class="chips" id="scanChips"></div>
+      </div>
+      <div class="stage-wrap" id="stageWrap">
+        <canvas id="stage" aria-label="Camera view of the cube face with an alignment grid"></canvas>
+        <div class="stage-empty" id="stageEmpty">
+          <b id="emptyTitle">Take a photo of this face</b>
+          <span class="small">Fill the grid with the face. Even light works best; avoid glare.</span>
+        </div>
+      </div>
+      <div class="row" id="autoRow" hidden>
+        <label class="switch"><input type="checkbox" id="autoToggle" checked> Auto-capture when the face is steady</label>
+      </div>
+      <div class="zoom" id="zoomRow" hidden>
+        <label for="zoom">Zoom</label>
+        <input type="range" id="zoom" min="1" max="4" step="0.01" value="1">
+      </div>
+      <div class="row">
+        <button class="btn grow" id="liveBtn" hidden>Start camera</button>
+        <label class="btn grow" id="photoBtn" for="photoInput">Take photo</label>
+        <input type="file" id="photoInput" accept="image/*" capture="environment">
+      </div>
+      <button class="btn" id="useBtn" disabled>Use this face</button>
+      <p class="small muted" id="liveNote" hidden></p>
+      <div class="thumbs" id="thumbs"></div>
+      <div class="row split">
+        <button class="link" id="manualBtn">Enter colors by hand</button>
+        <button class="link" id="demoBtn">Try a random scramble</button>
+      </div>
+    </div>
+
+    <div class="screen" id="screen-check" hidden>
+      <div class="card">
+        <p class="eyebrow">Check the colors</p>
+        <h2>Fix any sticker the camera misread</h2>
+        <p class="small muted">Pick a color, then tap stickers to paint them. The layout is the cube unfolded: top, then left, front, right and back, then bottom.</p>
+      </div>
+      <div class="net-wrap"><div class="net" id="net"></div></div>
+      <div class="palette" id="palette"></div>
+      <div class="verdict" id="verdict"></div>
+      <div class="card problem" id="problem" hidden>
+        <p class="eyebrow">Problem found</p>
+        <h2 id="problemTitle"></h2>
+        <div class="cube3d small-cube" id="fixCube"></div>
+        <div id="problemBody" class="small"></div>
+        <div class="row" id="problemActions"></div>
+      </div>
+      <div class="row">
+        <button class="btn grow" id="rescanBtn">Rescan all</button>
+        <button class="btn accent grow" id="solveBtn" disabled>Solve</button>
+      </div>
+    </div>
+
+    <div class="screen" id="screen-solve" hidden>
+      <div class="card" id="holdNote"></div>
+      <div class="cube3d" id="cube3d">
+        <button class="link reset" id="resetView">Reset view</button>
+        <span class="hint">Drag to look around</span>
+      </div>
+      <div class="card problem" id="recovery" hidden>
+        <p class="eyebrow">Wrong turn found</p>
+        <div class="move-now"><div class="notation" id="recNotation"></div><div class="move-text" id="recText"></div></div>
+        <div class="row"><button class="btn grow" id="recShow">Show me</button><button class="btn primary grow" id="recDone">Done, continue</button></div>
+      </div>
+      <div id="mainPlayer" class="stack">
+        <div class="move-now"><div class="notation" id="notation">R</div><div class="move-text" id="moveText"></div></div>
+        <div class="row split"><span class="progress" id="progress"></span><button class="link" id="showBtn">Show this move</button></div>
+        <div class="bar"><i id="barFill"></i></div>
+        <div class="controls">
+          <button class="btn" id="prevBtn">Back</button>
+          <button class="btn" id="playBtn">Play all</button>
+          <button class="btn primary" id="nextBtn">Done, next</button>
+        </div>
+        <button class="link" id="offTrackBtn">Lost track? Rescan your cube</button>
+        <div class="card">
+          <p class="eyebrow">All moves</p>
+          <div class="moves" id="moves"></div>
+          <p class="small muted">A letter is a quarter turn clockwise when you look straight at that face. &prime; means counterclockwise, 2 means a half turn.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PLAY ============ -->
+  <section id="tab-play" class="tab" hidden>
+    <div id="game-lobby" class="stack">
+      <div class="card hero-card">
+        <p class="eyebrow">Daily challenge</p>
+        <h2>Today&rsquo;s scramble</h2>
+        <p class="small muted" id="dailyState"></p>
+        <button class="btn accent" id="dailyBtn">Play the daily</button>
+      </div>
+      <div class="card">
+        <p class="eyebrow">Free play</p>
+        <div class="picks" id="sizePick" role="group" aria-label="Cube size"></div>
+        <div class="picks" id="diffPick" role="group" aria-label="Difficulty"></div>
+        <p class="small muted" id="lobbyInfo"></p>
+        <button class="btn primary" id="playBtnStart">Scramble and play</button>
+      </div>
+      <div class="card">
+        <p class="eyebrow">Best times</p>
+        <div class="table-wrap"><table class="best" id="bestTable"></table></div>
+      </div>
+      <div class="house-ad card" hidden><p class="small"><b>Cube Coach Pro</b> removes ads, unlocks premium skins and gives free hints.</p><button class="btn small-btn" data-go="shop">See Pro</button></div>
+    </div>
+    <div id="game-play" class="stack" hidden>
+      <div class="row split">
+        <button class="link" id="quitBtn">&larr; Quit</button>
+        <b id="gameTitle"></b>
+        <button class="link" id="gameReset">Reset view</button>
+      </div>
+      <div class="hud"><span id="gameTime">0.00</span><span id="gameMoves">0 moves</span></div>
+      <div class="cube3d game" id="gameCube">
+        <span class="hint">Swipe a sticker to turn. Drag the background to look around.</span>
+        <div class="game-over" id="gameOver" hidden>
+          <div class="solved-banner">Solved!</div>
+          <div class="over-time" id="overTime"></div>
+          <div class="small" id="overStats"></div>
+          <div class="row"><button class="btn" id="lobbyBtn">Menu</button><button class="btn primary" id="againBtn">Play again</button></div>
+        </div>
+      </div>
+      <div class="row">
+        <button class="btn grow" id="undoBtn">Undo</button>
+        <button class="btn grow" id="hintBtn">Hint</button>
+        <button class="btn grow" id="padToggle" aria-pressed="false">Buttons</button>
+      </div>
+      <div class="pad" id="movePad" hidden></div>
+    </div>
+  </section>
+
+  <!-- ============ LEARN ============ -->
+  <section id="tab-learn" class="tab" hidden>
+    <div id="learn-list" class="stack">
+      <div class="picks" id="trackPick" role="group" aria-label="Cube"></div>
+      <div class="card">
+        <p class="small" id="trackBlurb"></p>
+        <p class="eyebrow" id="trackProgress"></p>
+      </div>
+      <div class="lessons" id="lessonList"></div>
+      <div class="house-ad card" hidden><p class="small"><b>Cube Coach Pro</b> removes ads, unlocks premium skins and gives free hints.</p><button class="btn small-btn" data-go="shop">See Pro</button></div>
+    </div>
+    <div id="learn-lesson" class="stack" hidden>
+      <button class="link" id="lessonBack">&larr; All lessons</button>
+      <div>
+        <p class="eyebrow" id="lessonEyebrow"></p>
+        <h2 id="lessonTitle"></h2>
+      </div>
+      <div id="lessonCubeWrap" class="stack">
+        <div class="cube3d" id="lessonCube"><button class="link reset" id="lessonReset">Reset view</button></div>
+        <div class="picks" id="demoPick"></div>
+        <div id="lessonPlayer" class="stack">
+          <div class="move-now"><div class="notation" id="lessonNotation"></div><div class="move-text" id="lessonMoveText"></div></div>
+          <div class="alg" id="lessonMoves"></div>
+          <div class="controls">
+            <button class="btn" id="lessonRestart">Restart</button>
+            <button class="btn" id="lessonStep">Step</button>
+            <button class="btn primary" id="lessonPlay">Play</button>
+          </div>
+        </div>
+        <div class="pad" id="practicePad" hidden></div>
+        <p class="small muted" id="practiceText"></p>
+      </div>
+      <div class="card lesson-body" id="lessonBody"></div>
+      <button class="btn accent" id="learnedBtn">Mark as learned</button>
+    </div>
+  </section>
+
+  <!-- ============ SHOP ============ -->
+  <section id="tab-shop" class="tab" hidden>
+    <p class="verdict demo small" id="shopMode">Demo mode on the website: purchases are simulated and nothing is charged.</p>
+    <div class="card pro-card">
+      <div class="row split"><h2>Cube Coach Pro</h2><b id="proPrice"></b></div>
+      <ul class="small ticks"><li>No ads</li><li>All Pro skins unlocked</li><li>Free hints in the game</li></ul>
+      <button class="btn accent" id="proBtn">Get Pro</button>
+    </div>
+    <div class="card">
+      <div class="row split"><h2>Coins</h2><span class="small muted">Earn them by solving and learning</span></div>
+      <button class="btn" id="coinsBtn">Buy 1,000 coins</button>
+    </div>
+    <h2 class="section-title">Sticker sets</h2>
+    <div class="items" id="stickerList"></div>
+    <h2 class="section-title">Cube styles</h2>
+    <div class="items" id="bodyList"></div>
+    <div class="row split"><button class="link" id="restoreBtn">Restore purchases</button><a class="link" href="privacy.html" target="_blank" rel="noopener">Privacy</a></div>
+  </section>
+</div>
+
+<nav class="tabbar" aria-label="Sections">
+  <button id="tb-solve"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7V4h3M17 4h3v3M20 17v3h-3M7 20H4v-3"/><rect x="8" y="8" width="8" height="8" rx="1"/></svg>Solve</button>
+  <button id="tb-play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg>Play</button>
+  <button id="tb-learn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8l9-4 9 4-9 4z"/><path d="M7 10v5c3 2 7 2 10 0v-5"/></svg>Learn</button>
+  <button id="tb-shop"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 016 0"/></svg>Shop</button>
+</nav>
+<div id="sheet" hidden></div>
+
+<script src="vendor/three.min.js"></script>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

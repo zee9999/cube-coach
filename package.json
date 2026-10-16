@@ -1,0 +1,23 @@
+{
+  "name": "cube-coach",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Scan, solve, play and learn Rubik's cubes.",
+  "scripts": {
+    "serve": "python -m http.server 8766 --directory www",
+    "sync": "npx cap sync",
+    "android": "npx cap open android",
+    "ios": "npx cap open ios"
+  },
+  "dependencies": {
+    "@capacitor-community/admob": "8.1.0",
+    "@capacitor/android": "8.5.2",
+    "@capacitor/core": "8.5.2",
+    "@capacitor/ios": "8.5.2",
+    "@revenuecat/purchases-capacitor": "13.7.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.5.2"
+  }
+}

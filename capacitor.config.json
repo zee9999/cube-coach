@@ -1,0 +1,8 @@
+{
+  "appId": "com.cubecoach.app",
+  "appName": "Cube Coach",
+  "webDir": "www",
+  "backgroundColor": "#0e1115",
+  "ios": { "contentInset": "never" },
+  "android": { "allowMixedContent": false }
+}
