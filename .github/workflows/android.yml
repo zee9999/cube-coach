@@ -43,7 +43,7 @@ jobs:
             -storepass throwaway -keypass throwaway -dname "CN=CI check"
           CC_KEYSTORE_PATH="$RUNNER_TEMP/throwaway.jks" CC_KEYSTORE_PASSWORD=throwaway CC_KEY_ALIAS=upload CC_KEY_PASSWORD=throwaway \
             ./gradlew --no-daemon bundleRelease
-          jarsigner -verify app/build/outputs/bundle/release/app-release.aab | tail -1
+          jarsigner -verify app/build/outputs/bundle/release/app-release.aab | grep "jar verified"
           rm -f "$RUNNER_TEMP/throwaway.jks" app/build/outputs/bundle/release/app-release.aab
       - name: Signed release bundle
         if: env.HAS_KEY == 'true'
