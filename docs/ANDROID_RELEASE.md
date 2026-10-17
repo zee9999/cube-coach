@@ -91,7 +91,7 @@ Each run gets a higher version code automatically, so every upload is accepted.
    - Content rating: fill in the questionnaire (no violence, no user content, digital purchases yes).
    - Target audience: 13 and over (keeps you out of the stricter Families program).
    - Data safety: camera images processed on device and not collected; device identifiers collected by AdMob for advertising; purchase history handled by Google Play. No data shared for other purposes.
-3. **Store listing:** copy the text from `docs/store-listing.md`. Upload `resources/play-icon-512.png`, `resources/feature-graphic-1024x500.png`, and 2 to 8 phone screenshots.
+3. **Store listing:** copy the text from `docs/store-listing.md`. Upload `resources/play-icon-512.png`, `resources/feature-graphic-1024x500.png`, and the five phone screenshots in `resources/store/play-phone/`.
 4. **Closed testing:** Testing > Closed testing > Create track. Upload the `.aab`, accept Play App Signing, add your testers' emails (or a Google Group), choose countries, then send for review. Share the opt-in link with testers and ask them to keep the app installed for the full 14 days.
 5. **Products:** once an `.aab` is uploaded, go to Monetize > Products > In-app products and create:
    - `cubecoach_pro`: Cube Coach Pro, $2.99 (non-consumable)

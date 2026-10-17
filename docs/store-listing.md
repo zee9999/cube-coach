@@ -1,14 +1,15 @@
-# Store listing text (Google Play and App Store)
+# Store listing (Google Play and App Store)
+
+Copy each field into the store console as is. Character limits are noted; every field below fits.
 
 Do not use "Rubik's" anywhere in the listing, keywords or screenshots: it is a registered trademark and
 listings that use it get rejected or taken down. Say "puzzle cube", "3x3 cube", "speed cube".
 
-**App name (30 chars max):** Cube Coach: Scan & Solve
+## Shared by both stores
 
-**Short description (Play, 80 chars max):**
-Scan your cube with the camera, follow animated moves, play and learn 2x2 to 7x7.
+**App name (30 max):** Cube Coach: Scan & Solve
 
-**Full description:**
+**Full description (4,000 max):**
 
 Stuck on a scrambled cube? Point your camera at it and Cube Coach shows you exactly how to solve it, one animated move at a time.
 
@@ -35,9 +36,65 @@ SHOP
 
 Your camera images stay on your device and are never uploaded.
 
-**Category:** Puzzle (Play) / Games > Puzzle or Education (App Store)
-**Contact email:** use a dedicated support address, not your personal one.
 **Privacy policy:** https://zee9999.github.io/cube-coach/privacy.html
+**Website / marketing URL:** https://zee9999.github.io/cube-coach/
+**Support email:** a dedicated address (e.g. a new Gmail for Cube Coach), not your personal one. **You: create it.**
 
-**Graphics in `resources/`:** `play-icon-512.png` (Play icon), `feature-graphic-1024x500.png` (Play feature graphic), `icon.png` (1024, App Store).
-**Screenshots (you, from your phone):** at least 2, ideally 5: scan grid with a cube, a solve step, the 5x5 game, a lesson, the shop.
+## Google Play only
+
+**Short description (80 max):**
+Scan your cube with the camera, follow animated moves, play and learn 2x2 to 7x7.
+
+**Category:** Games > Puzzle
+**Tags (pick up to 5 in the console):** Puzzle, Brain games, Educational, Single player, Offline
+**Contains ads:** Yes. **In-app purchases:** Yes ($0.99 to $2.99 per item).
+
+**Graphics:**
+| Asset | File | Size |
+|---|---|---|
+| App icon | `resources/play-icon-512.png` | 512 x 512 |
+| Feature graphic | `resources/feature-graphic-1024x500.png` | 1024 x 500 |
+| Phone screenshots (5) | `resources/store/play-phone/*.png` | 1080 x 1920 |
+
+Tablet screenshots are optional; skip them for the first release.
+
+## App Store only
+
+**Subtitle (30 max):** Camera solver, games, lessons
+
+**Promotional text (170 max, editable any time without review):**
+Point your camera at a scrambled cube and get a short, animated solution. Then play 2x2 to 7x7 and learn the method step by step.
+
+**Keywords (100 max, commas, no spaces; words already in the name are indexed, so they are left out):**
+solver,puzzle,speedcube,3x3,2x2,4x4,5x5,camera,timer,tutorial,learn,beginner,algorithm,brain,game
+
+**Primary category:** Games, subcategory Puzzle. **Secondary category:** Education.
+**Age rating:** answer "None" to every content question. Expect 4+.
+**Copyright:** 2026 <your full name or company>
+**Support URL:** https://zee9999.github.io/cube-coach/ (Apple requires a page with a way to contact you: add the support email to the site footer before submitting).
+**Devices:** iPhone only (`TARGETED_DEVICE_FAMILY = 1`), so no iPad screenshots are needed.
+
+**Screenshots:** `resources/store/ios-6.9/*.png`, 1320 x 2868 (6.9" iPhone). App Store Connect scales these down for every smaller iPhone; no other sizes are required.
+
+**App Review notes:**
+Camera is used to read cube colors. To test without a cube, open the Solve tab and tap "Try a random scramble". Purchases can be tested with a sandbox account; "Restore purchases" is at the bottom of the Shop tab.
+
+## Screenshots
+
+All store screenshots are generated, not taken by hand. After any UI change, run:
+
+```
+node tools/store-shots.mjs
+```
+
+It starts the web app in headless Chrome at iPhone size, sets up a sample player (1,240 coins, no Pro), captures five scenes
+(scan check, 3D solve, 5x5 game, lesson, shop) and frames each with a headline. Output:
+
+- `resources/store/ios-6.9/` App Store, 1320 x 2868
+- `resources/store/play-phone/` Google Play, 1080 x 1920
+- `resources/store/raw/` the plain app screens, 1170 x 2532
+
+Headlines and scenes live in the `SCENES` list at the top of the script.
+
+The scan shot shows the color check step, not the live camera (headless Chrome has no camera). If you want a real
+camera shot as the first image, take one on your phone mid-scan and put it through the same frame.
