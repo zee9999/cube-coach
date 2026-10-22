@@ -3,6 +3,7 @@ import { $, h, sheet } from './ui.js';
 import { data } from './state.js';
 import { STICKERS, BODIES, owns, buyWithCoins, equip } from './market.js';
 import { buy, restore, priceOf, mode } from './store.js';
+import { hasPrivacyOptions, showPrivacyOptions } from './ads.js';
 
 function confirmDemo(def, price) {
   return sheet(`Buy ${def.title}?`, [
@@ -24,6 +25,7 @@ export function renderShop() {
   $('proBtn').disabled = data.pro;
   $('proBtn').textContent = data.pro ? 'You have Pro' : `Get Pro · ${priceOf('pro')}`;
   $('coinsBtn').textContent = `Buy 1,000 coins · ${priceOf('coins')}`;
+  $('adPrivacyBtn').hidden = !hasPrivacyOptions();
   for (const [listId, items, kind] of [['stickerList', STICKERS, 'stickers'], ['bodyList', BODIES, 'body']]) {
     const list = $(listId); list.innerHTML = '';
     items.forEach(raw => {
@@ -42,4 +44,5 @@ export function initShop() {
   $('proBtn').onclick = async () => { if (await buy('pro', confirmDemo)) renderShop(); };
   $('coinsBtn').onclick = async () => { if (await buy('coins', confirmDemo)) renderShop(); };
   $('restoreBtn').onclick = async () => { await restore(); renderShop(); };
+  $('adPrivacyBtn').onclick = showPrivacyOptions;
 }

@@ -34,7 +34,8 @@ Confirm that your country is on Google's list of supported merchant countries be
 1. Sign up at https://admob.google.com with the same Google account.
 2. Add an Android app (choose "not published yet"), then create one **Banner** and one **Interstitial** ad unit.
 3. Put the app id in `android/app/src/main/AndroidManifest.xml` (replace the test id after `APPLICATION_ID`) and the two unit ids in `www/js/config.js`. Set `admob.testing` to `false` only for the release build.
-4. After the app is live, link it to the Play listing in AdMob and add an `app-ads.txt` (AdMob shows the line) to your developer website.
+4. **Privacy & messaging > European regulations:** create a GDPR message for the app (use the privacy policy URL below) and publish it. The app already shows this consent form to users in the EEA, UK and Switzerland and adds "Ad privacy choices" to the Shop; without a published message no form appears and AdMob serves only limited ads there.
+5. After the app is live, link it to the Play listing in AdMob and add an `app-ads.txt` (AdMob shows the line). It must sit at the root of the website domain on the Play listing, so for `zee9999.github.io` it goes in a `zee9999.github.io` repository, not in `cube-coach`.
 
 ## Part B. First Android build
 
@@ -84,20 +85,33 @@ Each run gets a higher version code automatically, so every upload is accepted.
 
 ## Part C. Play Console setup (you)
 1. **Create app:** name "Cube Coach: Scan & Solve", default language English, App (not game) or Game > Puzzle, Free.
-2. **App content** (Policy > App content):
+2. **Declarations** (when creating the app): tick all three.
+   - Developer Program Policies: the app is checked against them (camera on device only, ads only between screens, Play Billing for purchases, no "Rubik's" wording).
+   - Play App Signing: Google keeps the app signing key; you sign uploads with your upload key (Part B, step 2).
+   - US export laws: the app uses only the standard HTTPS built into Android and Google's SDKs, which is exempt. Nothing to file.
+3. **App content** (Policy > App content):
    - Privacy policy: https://zee9999.github.io/cube-coach/privacy.html
    - Ads: Yes, contains ads.
-   - App access: all features available without special access.
-   - Content rating: fill in the questionnaire (no violence, no user content, digital purchases yes).
-   - Target audience: 13 and over (keeps you out of the stricter Families program).
-   - Data safety: camera images processed on device and not collected; device identifiers collected by AdMob for advertising; purchase history handled by Google Play. No data shared for other purposes.
-3. **Store listing:** copy the text from `docs/store-listing.md`. Upload `resources/play-icon-512.png`, `resources/feature-graphic-1024x500.png`, and the five phone screenshots in `resources/store/play-phone/`.
-4. **Closed testing:** Testing > Closed testing > Create track. Upload the `.aab`, accept Play App Signing, add your testers' emails (or a Google Group), choose countries, then send for review. Share the opt-in link with testers and ask them to keep the app installed for the full 14 days.
-5. **Products:** once an `.aab` is uploaded, go to Monetize > Products > In-app products and create:
+   - App access: all functionality is available without special access.
+   - Content rating: fill in the questionnaire. No violence, no user-generated content, no user interaction, no location sharing; digital purchases: yes. Expect "Everyone" / PEGI 3.
+   - Target audience: tick only **13-15, 16-17 and 18+**. "Could your app unintentionally appeal to children?" No. Ticking any age under 13 puts the app in the Families program, which needs child-safe ad settings this build doesn't use.
+   - Advertising ID: Yes. Purposes: Advertising or marketing, Analytics, Fraud prevention, security and compliance.
+   - Data safety (matches the privacy policy; Google's and RevenueCat's own disclosure guides):
+     - Collects or shares required data: Yes. Encrypted in transit: Yes. Users can request deletion: Yes (via the contact in the privacy policy).
+     - Location > Approximate location: collected and shared, not optional. Purposes: Advertising or marketing, Analytics, Fraud prevention, security and compliance. (AdMob, from the IP address.)
+     - App activity > App interactions: collected and shared, same three purposes. (AdMob.)
+     - App info and performance > Diagnostics: collected and shared, same three purposes. (AdMob.)
+     - Device or other IDs: collected and shared, same three purposes. (AdMob advertising ID.)
+     - Financial info > Purchase history: collected, not shared, required. Purposes: App functionality, Analytics. (RevenueCat.)
+     - Photos and videos: **do not** declare. Camera frames are processed on the device and never leave it.
+   - Foreground service, health, financial features, news, government: none or not applicable.
+4. **Store listing:** copy the text from `docs/store-listing.md`. Upload `resources/play-icon-512.png`, `resources/feature-graphic-1024x500.png`, and the five phone screenshots in `resources/store/play-phone/`.
+5. **Closed testing:** Testing > Closed testing > Create track. Upload the `.aab`, accept Play App Signing, add your testers' emails (or a Google Group), choose countries, then send for review. Share the opt-in link with testers and ask them to keep the app installed for the full 14 days.
+6. **Products:** once an `.aab` is uploaded, go to Monetize > Products > In-app products and create:
    - `cubecoach_pro`: Cube Coach Pro, $2.99 (non-consumable)
    - `cubecoach_coins_1000`: 1,000 coins, $0.99 (consumable)
-6. Finish RevenueCat (Part A, step 3.4 and 3.5) and AdMob ids, push, build again, and upload the new `.aab` to the closed test so testers can try real purchases (testers added as "license testers" are not charged).
-7. **Production:** after 14 days with 12+ testers, Play Console unlocks "Apply for production". Answer the questions about your test, then roll out to Production.
+7. Finish RevenueCat (Part A, step 3.4 and 3.5) and AdMob ids, push, build again, and upload the new `.aab` to the closed test so testers can try real purchases (testers added as "license testers" are not charged).
+8. **Production:** after 14 days with 12+ testers, Play Console unlocks "Apply for production". Answer the questions about your test, then roll out to Production.
 
 ## Before every release
 - `npx cap sync` after changing anything in `www/` (the cloud build does this for you).
