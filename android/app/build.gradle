@@ -11,7 +11,8 @@ android {
     namespace = "com.cubecoach.app"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.cubecoach.app"
+        // The Play package (com.cubecoach.app was taken on Play). The Java package stays com.cubecoach.app (namespace above).
+        applicationId "com.zeecorp.cubecoach"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         // Every Play upload needs a higher versionCode; CI uses the run number.

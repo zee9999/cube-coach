@@ -32,7 +32,7 @@ In Play Console: **Settings > Payments profile**. Egypt is supported:
 
 ### 3. RevenueCat (free tier, handles purchases)
 1. Sign up at https://app.revenuecat.com and create a project called Cube Coach.
-2. Add a **Google Play** app with package name `com.cubecoach.app`.
+2. Add a **Google Play** app with package name `com.zeecorp.cubecoach`.
 3. Follow RevenueCat's guide "Google Play service credentials" to create a Google Cloud service account and grant it access in Play Console (Users and permissions). Upload its JSON key to RevenueCat. It can take up to 36 hours to start working.
 4. After the products exist in Play (Part C, step 6), import them in RevenueCat (Product catalog > Products). Set `cubecoach_pro` to **Non-consumable** and `cubecoach_coins_1000` to Consumable: Play has no such setting, and a Pro purchase that RevenueCat consumes can never be restored. Then create an entitlement named `pro` and attach `cubecoach_pro` to it.
 5. Copy the **public Android SDK key** (starts with `goog_`) into `www/js/config.js` as `revenueCatKeyAndroid`. The same commit must include the `getProducts` fix in checklist 2.1, or no product loads.
@@ -94,7 +94,7 @@ When the run is green, download the `cube-coach-release-aab` artifact. That `.aa
 Each run gets a higher version code automatically, so every upload is accepted. Start a new run for every upload: **Re-run** keeps the old run number, and Play rejects a version code it has already seen.
 
 ## Part C. Play Console setup (you)
-1. **Create app (do this first, today):** name "Cube Coach: Scan & Solve", default language English, Game, Free (the category Puzzle is set later in Store settings). Creating the app registers `com.cubecoach.app` to your account (Android developer verification). Then check that the **Android developer verification** page in Play Console shows the package as registered.
+1. **Create app: done 2026-10-23.** "Cube Coach: Scan & Solve", English (United States), Game, Free, package **`com.zeecorp.cubecoach`** (`com.cubecoach.app` was already taken on Play, so the Android application ID was changed to match). Creating it registered the package to your account for Android developer verification.
    - **Store listing contact details** (Grow users > Store presence > Store settings): a contact email is required. Use zee9x9@gmail.com (the same address as the privacy policy), and set the website to https://zee9999.github.io/cube-coach/.
 2. **Declarations** (when creating the app): tick all three.
    - Developer Program Policies: the app is checked against them (camera on device only, ads only between screens, Play Billing for purchases, no "Rubik's" wording).

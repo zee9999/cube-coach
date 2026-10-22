@@ -13,7 +13,7 @@ Everything below that says **you** needs your accounts or your machine; the code
 | Google AdMob | free | ads |
 
 ## 2. Identity
-- App id / bundle id: `com.cubecoach.app` (in `capacitor.config.json`). Change it now if you want your own domain-style id; it can't change after the first upload.
+- App id / bundle id: `com.zeecorp.cubecoach` (in `capacitor.config.json`; Android `applicationId` and the iOS bundle id match). `com.cubecoach.app` was already taken on Google Play. It can't change after the first upload.
 - Name: Cube Coach. Icon source: `resources/icon.png` (already placed in both native projects).
 
 ## 3. In-app products (you, in both stores, same ids)

@@ -89,7 +89,14 @@ Sources: [Category and tags](https://support.google.com/googleplay/android-devel
 
 ## 3. Accounts and Play Console (you), in order
 
-1. **Create the app now.** Use Game, Free. Creating it registers `com.cubecoach.app` to you automatically (Android developer verification, mandatory for Play apps since 30 Sep 2026). Then check that Play Console's Android developer verification page shows it as registered. [Verification: Play Console](https://developer.android.com/developer-verification/guides/google-play-console).
+**Done in Play Console on 2026-10-23** (saved as drafts in Publishing overview; nothing sent for review yet):
+- **App:** `com.zeecorp.cubecoach`, Game, Free, with Play's automatic protection on (an installer check that sends people with copies from other sources to Google Play).
+- **App content:** all declarations. The content rating came out as ESRB Everyone, PEGI 3, USK all ages and Australia General, but **Brazil 14+** (in-game purchases).
+- **Data safety:** as in the release guide. The deletion link is `privacy.html#delete-data`, which goes live once pushed.
+- **Store listing:** text, icon, feature graphic and 5 phone screenshots, with no AI label.
+- **Store settings:** Game > Puzzle; tags Puzzle, Logic puzzle, Brain teaser and Brain training (Play has no "Single player" or "Offline" tags); contact email and website.
+
+1. **Done 2026-10-23: app created** as `com.zeecorp.cubecoach` (`com.cubecoach.app` was taken by another developer). Creating it registered the package to you (Android developer verification). [Verification: Play Console](https://developer.android.com/developer-verification/guides/google-play-console).
 2. **Support email (required).** Use zee9x9@gmail.com, the address in the privacy policy, as the developer email and under Grow users > Store presence > Store settings > Store listing contact details. The listing cannot be saved without it. [Store settings](https://support.google.com/googleplay/android-developer/answer/9859152).
 3. **Payments profile (Egypt is supported).**
    - Payouts come by **USD wire**: US$100 minimum, around the 15th for the previous month, with bank fees from US$0 to 50+.

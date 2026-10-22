@@ -11,7 +11,7 @@ listings that use it get rejected or taken down. Say "puzzle cube", "3x3 cube", 
 
 **Full description (4,000 max):**
 
-Stuck on a scrambled cube? Point your camera at it and Cube Coach shows you exactly how to solve it, one animated move at a time.
+Stuck on a scrambled cube? Cube Coach is a camera cube solver: point your camera at your cube and it shows you exactly how to solve it, one animated move at a time.
 
 SOLVE
 • Scan a 3x3 or 2x2 cube with your camera. Hold each side steady and it captures automatically.
@@ -32,7 +32,7 @@ LEARN
 
 SHOP
 • Earn coins by solving and learning, and spend them on sticker sets and cube styles.
-• Cube Coach Pro removes ads, unlocks the Pro skins and gives free hints.
+• Cube Coach Pro, a one-time in-app purchase, removes ads, unlocks the Pro skins and gives free hints. Coin packs are also for sale.
 
 Your camera images stay on your device and are never uploaded.
 
@@ -46,7 +46,7 @@ Your camera images stay on your device and are never uploaded.
 Cube solver by camera: follow animated moves, then play and learn 2x2 to 7x7.
 
 **Category:** Games > Puzzle
-**Tags (pick up to 5 in the console):** Puzzle, Brain games, Educational, Single player, Offline
+**Tags (set in the console):** Puzzle, Logic puzzle, Brain teaser, Brain training. Play only has genre tags; "Educational" is left out because it can read as aimed at children.
 **Contains ads:** Yes. **In-app purchases:** Yes ($0.99 to $2.99 per item).
 
 **Graphics:**

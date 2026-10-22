@@ -21,6 +21,6 @@ export const CONFIG = {
   },
   privacyPolicyUrl: 'https://zee9999.github.io/cube-coach/privacy.html',
   // Play listing. Set playStoreLive to true once the app is public, so the website links to it.
-  playStoreUrl: 'https://play.google.com/store/apps/details?id=com.cubecoach.app',
+  playStoreUrl: 'https://play.google.com/store/apps/details?id=com.zeecorp.cubecoach',
   playStoreLive: false,
 };
