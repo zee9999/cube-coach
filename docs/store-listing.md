@@ -38,12 +38,12 @@ Your camera images stay on your device and are never uploaded.
 
 **Privacy policy:** https://zee9999.github.io/cube-coach/privacy.html
 **Website / marketing URL:** https://zee9999.github.io/cube-coach/
-**Support email:** a dedicated address (e.g. a new Gmail for Cube Coach), not your personal one. **You: create it.**
+**Support email:** zee9x9@gmail.com (also the privacy contact in `www/privacy.html`).
 
 ## Google Play only
 
 **Short description (80 max):**
-Scan your cube with the camera, follow animated moves, play and learn 2x2 to 7x7.
+Cube solver by camera: follow animated moves, then play and learn 2x2 to 7x7.
 
 **Category:** Games > Puzzle
 **Tags (pick up to 5 in the console):** Puzzle, Brain games, Educational, Single player, Offline
