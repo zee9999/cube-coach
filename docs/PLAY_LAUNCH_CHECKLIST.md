@@ -14,6 +14,8 @@ Pick one before creating the payments profile:
 - **C.** Ship v1 with ads only and add Pro and coins in an update.
 
 Whichever you pick, set a brand developer name (for example "Cube Coach") under Settings > Developer account > About you. Google reviews name changes before they appear.
+
+**Decided 2026-10-23:** ads plus in-app purchases (A or B). The address shown is whichever one you put in the payments profile.
 Sources: [Required account information](https://support.google.com/googleplay/android-developer/answer/13628312), [Developer account information](https://support.google.com/googleplay/android-developer/answer/13634081).
 
 ### 1.2 Which countries at launch (privacy and teen laws)
@@ -33,6 +35,8 @@ The US and Brazil both need the same code (section 2.2), so the realistic option
 - **B.** Everywhere, with the age handling plus EU and UK representatives from day one.
 - **C.** Everywhere, without representatives. Enforcement against tiny non-EU apps is rare, but this is a legal gap you would be choosing to carry.
 
+**Decided 2026-10-23: A.** Production goes to every country except the 30 EEA countries (EU plus Iceland, Liechtenstein and Norway), the UK, Vietnam and Turkey. Switzerland stays in. The age handling is built (section 2.2).
+
 ### 1.3 Category: Game > Puzzle
 [store-listing.md](store-listing.md) already says Games > Puzzle, and ANDROID_RELEASE.md now matches. As a game:
 - `android:appCategory="game"` keeps the portrait lock on tablets (section 2.3).
@@ -46,7 +50,7 @@ Sources: [Category and tags](https://support.google.com/googleplay/android-devel
 
 ### 2.1 Before the first closed-test build
 - **Fixed 2026-10-23: products never loaded.** `Purchases.getProducts` defaults to subscriptions on Android (`definitions.d.ts:10`, `PurchasesPlugin.kt:231`), so `cubecoach_pro` and `cubecoach_coins_1000` would never load and every Buy tap would say the item isn't available. [store.js](../www/js/store.js) now passes `type: 'NON_SUBSCRIPTION'` (iOS ignores it) and retries when the shop opens.
-- **Fixed 2026-10-23: shop showed prices it could not sell.** In the store builds the shop now shows "Unavailable" and disables Buy until the store returns the product, instead of the hard-coded "$2.99"/"$0.99". In-app prices must match Play's billing sheet. Still open: hide Buy and Restore in builds where `revenueCatKeyAndroid` is empty. [Payments policy](https://support.google.com/googleplay/android-developer/answer/9858738).
+- **Fixed 2026-10-23: shop showed prices it could not sell.** In the store builds the shop now shows "Unavailable" and disables Buy until the store returns the product, instead of the hard-coded "$2.99"/"$0.99". In-app prices must match Play's billing sheet. A store build without a RevenueCat key shows no buy or Restore buttons at all, so a closed-test AAB without the key never shows a broken shop. [Payments policy](https://support.google.com/googleplay/android-developer/answer/9858738).
 - **Fixed 2026-10-23: pending payments.** A pending payment (RevenueCat error code 20) used to show "You were not charged" and never credit the coins. It now says "Payment pending". Coins are credited when the payment completes, by counting coin-pack purchases in `customerInfo.nonSubscriptionTransactions` at launch and in `addCustomerInfoUpdateListener`, so each pack is credited once. Test this with the "slow test card" (section 4). [RevenueCat errors](https://www.revenuecat.com/docs/test-and-launch/errors).
 - **Fixed 2026-10-23: back button.** Back used to send the app to the background from every screen, and on Android 16 with targetSdk 36 the old back callbacks are not called at all. With `@capacitor/app` 8.1.2, back now steps through: close sheet, then leave the game (asks first while a game is running) or the lesson, then the solve step, then the Solve tab, then minimize. The Privacy link uses the absolute URL, so it opens in the browser instead of trapping the user in the WebView. [Android 16 behaviour changes](https://developer.android.com/about/versions/16/behavior-changes-16), [Functionality policy](https://support.google.com/googleplay/android-developer/answer/9898783).
 - **Fixed 2026-10-23: privacy policy ([privacy.html](../www/privacy.html)).**
@@ -56,28 +60,31 @@ Sources: [Category and tags](https://support.google.com/googleplay/android-devel
   - It discloses Google Fonts and GitHub Pages hosting. Self-hosting the fonts would remove the Google Fonts disclosure and make the fonts work offline.
 
   Sources: [User Data policy](https://support.google.com/googleplay/android-developer/answer/10144311), [GDPR Art. 13](https://gdpr-info.eu/art-13-gdpr/), [Auto Backup](https://developer.android.com/identity/data/autobackup).
-- **Code: release guard.** Make CI fail the signed release build while `revenueCatKeyAndroid` is empty.
-- **Code: splash screen.** The launch screen is still the Capacitor template. Generate branded assets or set a solid `#0e1115` background. [Splash screens](https://developer.android.com/develop/ui/views/launch/splash-screen).
+- **No CI release guard (changed 2026-10-23).** Builds without a RevenueCat key now hide the shop's buy buttons, so the first closed-test AAB can go out before RevenueCat exists. The production AAB still needs the key (section 5).
+- **Fixed 2026-10-23: splash screen.** The Capacitor logo on white is replaced by the sticker-grid icon on the app's dark background, on every Android version. [Splash screens](https://developer.android.com/develop/ui/views/launch/splash-screen).
 
-### 2.2 Before production
-- **Code: age handling (needed for the US and Brazil, see 1.2).**
-  - Add Play Age Signals (`com.google.android.play:age-signals:0.0.4`, beta) as a small local Capacitor plugin registered in `MainActivity`.
-  - Fall back to a neutral year-of-birth question.
-  - For under-18s, request non-personalised ads through the Mobile Ads SDK's age-restricted treatment (SDK 25.3+, which replaced the under-age-of-consent tag) and `npa`.
-  - Use the signal only for compliance, never for ads or analytics.
+### 2.2 Before production (all fixed 2026-10-23)
+- **Age handling, needed for the US and Brazil (see 1.2).**
+  - A local Capacitor plugin ([AgeSignalsPlugin.java](../android/app/src/main/java/com/cubecoach/app/AgeSignalsPlugin.java)) calls Play Age Signals (`com.google.android.play:age-signals:0.0.4`, beta) once per launch.
+  - When Play says the user is under 18, or that the age is still unverified where the law requires it (Texas), **the app shows no ads at all**. The ads SDK isn't started, or is stopped if the answer comes late.
+  - This design keeps the age answer on the device. Play's Age Signals terms forbid using the data "for advertising", so it is never passed to AdMob, not even as a "restricted ads" flag.
+  - Only the derived result is kept, in the app's data on the device ([age.js](../www/js/age.js)). Adults are asked again after 30 days. People who decline are asked again after 30 days, and a refusal never lifts an earlier minor result.
+  - There is no self-declared age question: with the EEA and UK out, nothing requires one.
+  - In Play Console > Age signals, **keep the default age ranges** (0-12, 13-15, 16-17, 18+), so 18 stays the boundary.
 
-  Sources: [Age Signals](https://developer.android.com/google/play/age-signals/request-age-signals), [Capacitor custom code](https://capacitorjs.com/docs/android/custom-code).
-- **Code: consent before ads.** Initialise the Mobile Ads SDK only after the consent form and `canRequestAds`. Today `initialize` runs first in [ads.js](../www/js/ads.js). [AdMob quick start](https://developers.google.com/admob/android/quick-start).
-- **Code: interstitial gap.** Skip the interstitial if one showed less than about 120 seconds ago, and set a frequency cap on the ad unit in AdMob. [AdMob interstitial guidance](https://support.google.com/admob/answer/6201362).
-- **Code: banner spacing.** The banner sits flush on the tab bar, the placement AdMob names as a top cause of accidental clicks. Add a 12px non-tappable strip between them. [AdMob banner guidance](https://support.google.com/admob/answer/6275345).
-- **Code: licences page.** The vendored cubejs solver ships without its MIT notice, and the app has no open-source notices. Add `www/licenses.html` covering cubejs (and the Kociemba credit), three.js, Capacitor, the AdMob and RevenueCat plugins, plus AndroidX (Apache-2.0). [cubejs licence](https://raw.githubusercontent.com/ldez/cubejs/master/LICENSE), [Google open-source notices](https://developers.google.com/android/guides/opensource).
-- **Code: the free website gives Pro away.** Demo mode grants Pro with no ads, and it is the listing's Website link. Replace the demo grant with a "Get it on Google Play" sheet. [Payments policy](https://support.google.com/googleplay/android-developer/answer/9858738).
+  Sources: [Age Signals](https://developer.android.com/google/play/age-signals/request-age-signals), [Age Signals terms](https://developer.android.com/google/play/age-signals/overview).
+- **Consent before ads.** The Mobile Ads SDK now starts only after the consent form and `canRequestAds`. [AdMob quick start](https://developers.google.com/admob/android/quick-start).
+- **Ad content rating.** Every request is capped at ParentalGuidance in code, which suits an Everyone/PEGI 3 app. Set the same cap in AdMob as a backstop. [Inappropriate ads](https://support.google.com/googleplay/android-developer/answer/9857753).
+- **Interstitial gap.** At least 120 seconds between interstitials, on top of every third finished game, and the next one is loaded only after the last one closes (loading earlier meant every second one failed). You can also set a frequency cap on the ad unit in AdMob. [AdMob interstitial guidance](https://support.google.com/admob/answer/6201362).
+- **Banner spacing.** There is a 12dp gap with a non-tappable strip between the banner and the tab bar. [AdMob banner guidance](https://support.google.com/admob/answer/6275345).
+- **Licences page.** [licenses.html](../www/licenses.html) carries the cubejs MIT notice (also added at the top of both vendor files), the Kociemba credit, three.js, Capacitor, the plugins, and AndroidX/Kotlin/Cordova under Apache-2.0. It also carries the open-source notices bundled inside Google's SDKs, the Apache Cordova notice and a credit for the Amazon Appstore SDK that RevenueCat includes. It is linked from the Shop next to Privacy. [Google open-source notices](https://developers.google.com/android/guides/opensource).
+- **The website no longer gives Pro away.** Buying on the website opens a sheet saying Pro and coin packs are sold in the Android app, and Pro left over from the old demo is cleared (Pro-only skins go back to the default). Set `playStoreLive: true` in [config.js](../www/js/config.js) on launch day so it links to the listing. [Payments policy](https://support.google.com/googleplay/android-developer/answer/9858738).
 
 ### 2.3 Small fixes and checks
-- **Code:** add `android:appCategory="game"` to `<application>`. Without it, Android 16 ignores the portrait lock on screens 600dp and wider. Check a Pixel Tablet emulator anyway. [Android 16 behaviour changes](https://developer.android.com/about/versions/16/behavior-changes-16).
-- **Code:** check the banner position on Android 15 and 16 with 3-button navigation. On Android 15+ the AdMob plugin's inset handler replaces Capacitor's, which can leave a gap. [System Bars](https://capacitorjs.com/docs/apis/system-bars).
-- **Code:** pin `playServicesAdsVersion` (it floats on `25.4.+`) so every build uses the same SDK. [Mobile Ads deprecation schedule](https://developers.google.com/admob/android/deprecation).
-- **Code:** release AABs are downloadable by any GitHub user while the repo is public. Set `retention-days: 1` on the AAB artifact and delete it after downloading. Never make the repo private or rename it without first moving the privacy page: GitHub Free unpublishes Pages for private repos.
+- **Fixed:** `android:appCategory="game"`, so Android 16 keeps the portrait lock on screens 600dp and wider. [Android 16 behaviour changes](https://developer.android.com/about/versions/16/behavior-changes-16).
+- **Check on a phone:** the banner position on Android 15 and 16 with 3-button navigation. On Android 15+ the AdMob plugin's inset handler replaces Capacitor's, which can leave a gap. [System Bars](https://capacitorjs.com/docs/apis/system-bars).
+- **Fixed:** Google Mobile Ads pinned to 25.4.0 in `variables.gradle`. [Mobile Ads deprecation schedule](https://developers.google.com/admob/android/deprecation).
+- **Fixed:** the release AAB artifact is kept for 1 day (any GitHub user can download artifacts of a public repo). Delete it after downloading. Never make the repo private or rename it without first moving the privacy page: GitHub Free unpublishes Pages for private repos.
 - **You:** start a new CI run (`gh workflow run`) for each upload. "Re-run" keeps the same run number, so Play rejects the duplicate versionCode. [Versioning](https://developer.android.com/studio/publish/versioning).
 
 ## 3. Accounts and Play Console (you), in order
@@ -101,7 +108,7 @@ Sources: [Category and tags](https://support.google.com/googleplay/android-devel
    - Create the account now; verification can take up to 2 weeks.
    - Payouts in Egypt are in **EGP** (since May 2025) by wire: identity check at $0, an address PIN posted at $10, and payment at **EGP 5,000**. Use a mail-deliverable Cairo address.
    - Submit W-8BEN in AdMob too, declaring no US activities.
-   - Set the maximum ad content rating to G and block gambling, dating and alcohol.
+   - Set the maximum ad content rating to PG (the app already caps it in code), and block gambling, dating and alcohol.
    - The app readiness review only starts once the Play listing is public, so expect limited ads for 2 to 3 days after launch.
 
    Sources: [AdMob thresholds](https://support.google.com/admob/answer/2772208), [AdMob US tax info](https://support.google.com/admob/answer/2772513), [App readiness](https://support.google.com/admob/answer/10564477), [Ads and content rating](https://support.google.com/googleplay/android-developer/answer/9857753).
@@ -125,14 +132,15 @@ Sources: [Category and tags](https://support.google.com/googleplay/android-devel
     - Keep "Rubik's" and "Rubix" out of everything, translations included.
 
     Sources: [Listing limits and metadata](https://support.google.com/googleplay/android-developer/answer/13393723), [IP policy](https://support.google.com/googleplay/android-developer/answer/9888072).
-12. **Countries:** as decided in 1.2. If Play asks for Brazil merchant details, provide them, or Brazil payments can be withheld.
-13. **Managed publishing:** turn it on once the closed release is live, so the approved production release goes out when you choose. The first production release always goes to 100% (no staged rollout); later updates can be staged. [Staged rollouts](https://support.google.com/googleplay/android-developer/answer/6346149).
+12. **Countries (decided in 1.2):** Test and release > Production > Countries/regions: add all, then remove the 27 EU countries, Iceland, Liechtenstein, Norway, the United Kingdom, Vietnam and Türkiye. If Play asks for Brazil merchant details, provide them, or Brazil payments can be withheld.
+13. **Age signals:** Play Console > Age signals: leave the default age ranges. Nothing else is needed. Notify a "significant change" there only if a future update adds chat, social features or random paid items.
+14. **Managed publishing:** turn it on once the closed release is live, so the approved production release goes out when you choose. The first production release always goes to 100% (no staged rollout); later updates can be staged. [Staged rollouts](https://support.google.com/googleplay/android-developer/answer/6346149).
 
 ## 4. Closed test playbook
 
 - **The rule:** at least 12 testers opted in **continuously** for the 14 days before you apply. A tester who leaves and rejoins restarts their own count. Recruit 15 to 20, log each opt-in date, and apply about day 16 or 17 after the 12th opt-in. [Testing requirements](https://support.google.com/googleplay/android-developer/answer/14151465).
 - **Setup:**
-  - Add a Google Group as the testers, set a feedback email, and choose all countries.
+  - Add a Google Group as the testers, set a feedback email, and use the production countries. Testers in the EEA, UK, Vietnam or Türkiye can't install it.
   - The opt-in link appears only once the closed release is Published.
   - Give testers only the opt-in link. A sideloaded CI debug APK has a different signing key and blocks the Play install.
   - Don't also put testers on internal testing.
@@ -162,7 +170,8 @@ Sources: [Category and tags](https://support.google.com/googleplay/android-devel
 
 ## 5. Launch day
 - Before installing the production build: register your phone as an AdMob test device and never tap live ads.
-- Build the production AAB with `admob.testing: false` and the real IDs.
+- Build the production AAB with `admob.testing: false`, the real AdMob IDs and the RevenueCat key (without the key the shop has no buy buttons).
+- Once the listing is public, set `playStoreLive: true` in `www/js/config.js` and push, so the website links to Google Play.
 - Publish `app-ads.txt` at `https://zee9999.github.io/app-ads.txt` (needs a public `zee9999.github.io` repo). Link the app in AdMob once the listing is public.
 
 ## 6. After launch
