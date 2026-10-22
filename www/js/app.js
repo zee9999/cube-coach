@@ -1,5 +1,5 @@
 // Boot and tab navigation.
-import { $ } from './ui.js';
+import { $, sheet } from './ui.js';
 import { data, onChange } from './state.js';
 import { initSolve, pause as pauseSolve, resume as resumeSolve } from './solve.js';
 import { initGame, showGame, hideGame, refreshSkin } from './game.js';
@@ -28,6 +28,23 @@ function go(tab) {
   try { history.replaceState(null, '', '#' + tab); } catch (e) { /* sandboxed */ }
   window.scrollTo({ top: 0 });
 }
+
+// Android back: close the open sheet, then step back out of a game, lesson or solve step, then to Solve, then leave the app.
+async function back() {
+  if (!$('sheet').hidden) { $('sheet').querySelector('.sheet-backdrop')?.click(); return; }
+  if (current === 'play' && !$('game-play').hidden) {
+    // A back swipe from the screen edge is easy to make by accident while turning the cube.
+    if ($('gameOver').hidden && !await sheet('Quit this game?', [], [{ label: 'Keep playing', value: false }, { label: 'Quit', value: true, primary: true }])) return;
+    $('quitBtn').click(); return;
+  }
+  if (current === 'learn' && !$('learn-lesson').hidden) { $('lessonBack').click(); return; }
+  if (current === 'solve' && !$('screen-solve').hidden) { $('nav-check').click(); return; }
+  if (current === 'solve' && !$('screen-check').hidden) { $('nav-scan').click(); return; }
+  if (current !== 'solve') { go('solve'); return; }
+  App.minimizeApp();
+}
+const App = window.Capacitor?.isNativePlatform?.() ? window.Capacitor.registerPlugin('App') : null;
+App?.addListener('backButton', back);
 
 function renderCoins() { $('coinCount').textContent = data.coins.toLocaleString(); $('proBadge').hidden = !data.pro; }
 

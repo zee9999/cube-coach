@@ -2,7 +2,7 @@
 import { $, h, sheet } from './ui.js';
 import { data } from './state.js';
 import { STICKERS, BODIES, owns, buyWithCoins, equip } from './market.js';
-import { buy, restore, priceOf, mode } from './store.js';
+import { buy, restore, priceOf, mode, refreshProducts } from './store.js';
 import { hasPrivacyOptions, showPrivacyOptions } from './ads.js';
 
 function confirmDemo(def, price) {
@@ -21,10 +21,13 @@ function preview(item) {
 export function renderShop() {
   $('shopMode').hidden = mode === 'native';
   $('shopMode').textContent = mode === 'unconfigured' ? 'Test build: purchases are switched off until the store is set up.' : 'Demo mode on the website: purchases are simulated and nothing is charged.';
-  $('proPrice').textContent = data.pro ? 'Active' : priceOf('pro');
-  $('proBtn').disabled = data.pro;
-  $('proBtn').textContent = data.pro ? 'You have Pro' : `Get Pro · ${priceOf('pro')}`;
-  $('coinsBtn').textContent = `Buy 1,000 coins · ${priceOf('coins')}`;
+  const proPrice = priceOf('pro'), coinsPrice = priceOf('coins');
+  $('proPrice').textContent = data.pro ? 'Active' : proPrice || 'Unavailable';
+  $('proBtn').disabled = data.pro || !proPrice;
+  $('proBtn').textContent = data.pro ? 'You have Pro' : proPrice ? `Get Pro · ${proPrice}` : 'Get Pro';
+  $('coinsBtn').disabled = !coinsPrice;
+  $('coinsBtn').textContent = coinsPrice ? `Buy 1,000 coins · ${coinsPrice}` : 'Buy 1,000 coins';
+  if (mode === 'native' && (!proPrice || !coinsPrice)) refreshProducts().then(ok => { if (ok) renderShop(); });
   $('adPrivacyBtn').hidden = !hasPrivacyOptions();
   for (const [listId, items, kind] of [['stickerList', STICKERS, 'stickers'], ['bodyList', BODIES, 'body']]) {
     const list = $(listId); list.innerHTML = '';
