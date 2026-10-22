@@ -2,7 +2,7 @@
 
 const KEY = 'cubecoach.v1';
 const listeners = new Set();
-const defaults = () => ({ coins: 150, owned: ['classic', 'black'], equipped: { stickers: 'classic', body: 'black' }, best: {}, learned: [], pro: false, daily: {}, solves: 0, firstRun: true, coinPacks: 0 });
+const defaults = () => ({ coins: 150, owned: ['classic', 'black'], equipped: { stickers: 'classic', body: 'black' }, best: {}, learned: [], pro: false, daily: {}, solves: 0, firstRun: true, coinPacks: 0, age: null });
 
 function load() {
   try { const raw = localStorage.getItem(KEY); if (raw) return { ...defaults(), ...JSON.parse(raw) }; } catch (e) { /* storage blocked */ }

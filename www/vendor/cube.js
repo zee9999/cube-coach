@@ -1,3 +1,7 @@
+/*! cubejs (github.com/ldez/cubejs), MIT License.
+ * Copyright (c) 2013-2017 Petri Lehtinen <petri@digip.org>
+ * Copyright (c) 2018 Ludovic Fernandez
+ * Full licence text: licenses.html */
 (function() {
   // Centers
   var B, BL, BR, Cube, D, DB, DBL, DF, DFR, DL, DLF, DR, DRB, F, FL, FR, L, R, U, UB, UBR, UF, UFL, UL, ULB, UR, URF, centerColor, centerFacelet, cornerColor, cornerFacelet, edgeColor, edgeFacelet;

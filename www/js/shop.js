@@ -1,15 +1,18 @@
 // Shop tab: Pro, coin pack and skins.
 import { $, h, sheet } from './ui.js';
 import { data } from './state.js';
+import { CONFIG } from './config.js';
 import { STICKERS, BODIES, owns, buyWithCoins, equip } from './market.js';
 import { buy, restore, priceOf, mode, refreshProducts } from './store.js';
 import { hasPrivacyOptions, showPrivacyOptions } from './ads.js';
 
-function confirmDemo(def, price) {
-  return sheet(`Buy ${def.title}?`, [
-    h('p', {}, `Price: ${price}`),
-    h('p', { class: 'small muted' }, 'Demo mode: nothing is charged on the website. In the App Store and Google Play versions this opens the store’s own checkout.'),
-  ], [{ label: 'Cancel', value: false }, { label: 'Buy (demo)', value: true, primary: true }]);
+// Website only: Pro and coin packs are sold in the Android app.
+async function offerApp(def) {
+  const live = CONFIG.playStoreLive;
+  const open = await sheet(`${def.title} is sold in the app`, [
+    h('p', {}, live ? 'Get Cube Coach on Google Play to buy it. The website stays free to use.' : 'Cube Coach for Android is coming soon to Google Play. The website stays free to use.'),
+  ], live ? [{ label: 'Not now', value: false }, { label: 'Open Google Play', value: true, primary: true }] : [{ label: 'OK', value: false, primary: true }]);
+  if (open) window.open(CONFIG.playStoreUrl, '_blank', 'noopener');
 }
 
 function preview(item) {
@@ -20,14 +23,18 @@ function preview(item) {
 
 export function renderShop() {
   $('shopMode').hidden = mode === 'native';
-  $('shopMode').textContent = mode === 'unconfigured' ? 'Test build: purchases are switched off until the store is set up.' : 'Demo mode on the website: purchases are simulated and nothing is charged.';
+  $('shopMode').textContent = mode === 'unconfigured' ? 'Test build: Pro and coin packs aren’t on sale yet.' : 'On the website, Pro and coin packs are sold in the Android app. Skins work here with the coins you earn.';
+  // Only the store build with RevenueCat sells. The website points to the app; a store build without a key shows no buy buttons.
+  const selling = mode === 'native', web = mode === 'demo';
+  $('proBtn').hidden = $('coinsBtn').hidden = mode === 'unconfigured';
+  $('restoreBtn').hidden = !selling;
   const proPrice = priceOf('pro'), coinsPrice = priceOf('coins');
-  $('proPrice').textContent = data.pro ? 'Active' : proPrice || 'Unavailable';
-  $('proBtn').disabled = data.pro || !proPrice;
-  $('proBtn').textContent = data.pro ? 'You have Pro' : proPrice ? `Get Pro · ${proPrice}` : 'Get Pro';
-  $('coinsBtn').disabled = !coinsPrice;
-  $('coinsBtn').textContent = coinsPrice ? `Buy 1,000 coins · ${coinsPrice}` : 'Buy 1,000 coins';
-  if (mode === 'native' && (!proPrice || !coinsPrice)) refreshProducts().then(ok => { if (ok) renderShop(); });
+  $('proPrice').textContent = data.pro ? 'Active' : selling ? proPrice || 'Unavailable' : '';
+  $('proBtn').disabled = data.pro || (selling && !proPrice);
+  $('proBtn').textContent = data.pro ? 'You have Pro' : web ? 'Get Pro in the app' : proPrice ? `Get Pro · ${proPrice}` : 'Get Pro';
+  $('coinsBtn').disabled = selling && !coinsPrice;
+  $('coinsBtn').textContent = web ? 'Coin packs in the app' : coinsPrice ? `Buy 1,000 coins · ${coinsPrice}` : 'Buy 1,000 coins';
+  if (selling && (!proPrice || !coinsPrice)) refreshProducts().then(ok => { if (ok) renderShop(); });
   $('adPrivacyBtn').hidden = !hasPrivacyOptions();
   for (const [listId, items, kind] of [['stickerList', STICKERS, 'stickers'], ['bodyList', BODIES, 'body']]) {
     const list = $(listId); list.innerHTML = '';
@@ -44,8 +51,8 @@ export function renderShop() {
 }
 
 export function initShop() {
-  $('proBtn').onclick = async () => { if (await buy('pro', confirmDemo)) renderShop(); };
-  $('coinsBtn').onclick = async () => { if (await buy('coins', confirmDemo)) renderShop(); };
+  $('proBtn').onclick = async () => { if (await buy('pro', offerApp)) renderShop(); };
+  $('coinsBtn').onclick = async () => { if (await buy('coins', offerApp)) renderShop(); };
   $('restoreBtn').onclick = async () => { await restore(); renderShop(); };
   $('adPrivacyBtn').onclick = showPrivacyOptions;
 }

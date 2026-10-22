@@ -1,3 +1,7 @@
+/*! cubejs (github.com/ldez/cubejs), MIT License.
+ * Copyright (c) 2013-2017 Petri Lehtinen <petri@digip.org>
+ * Copyright (c) 2018 Ludovic Fernandez
+ * Full licence text: licenses.html */
 (function() {
   var B, BL, BR, Cnk, Cube, D, DB, DBL, DF, DFR, DL, DLF, DR, DRB, F, FL, FR, Include, L, N_FLIP, N_FRtoBR, N_PARITY, N_SLICE1, N_SLICE2, N_TWIST, N_UBtoDF, N_URFtoDLF, N_URtoDF, N_URtoUL, R, U, UB, UBR, UF, UFL, UL, ULB, UR, URF, allMoves1, allMoves2, computeMoveTable, computePruningTable, faceNames, faceNums, factorial, key, max, mergeURtoDF, moveTableParams, nextMoves1, nextMoves2, permutationIndex, pruning, pruningTableParams, rotateLeft, rotateRight, value,
     indexOf = [].indexOf;

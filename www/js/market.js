@@ -34,3 +34,11 @@ export function buyWithCoins(item) {
   return true;
 }
 export function equip(item) { if (!owns(item)) return; update(d => { d.equipped[item.kind] = item.id; }); }
+// Puts the default back for an equipped skin the player no longer owns, for example a Pro skin after Pro ends.
+export function unequipUnowned() {
+  const st = STICKERS.find(s => s.id === data.equipped.stickers), bd = BODIES.find(b => b.id === data.equipped.body);
+  const reset = {};
+  if (st && !owns(st)) reset.stickers = STICKERS[0].id;
+  if (bd && !owns(bd)) reset.body = BODIES[0].id;
+  if (Object.keys(reset).length) update(d => { Object.assign(d.equipped, reset); });
+}

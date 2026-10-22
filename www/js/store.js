@@ -1,15 +1,18 @@
 // In-app purchases. In the iOS/Android build this uses RevenueCat (Apple and Google billing).
 // In RevenueCat, set cubecoach_pro to Non-consumable, or Pro is consumed and can't be restored.
-// On the website it runs in demo mode: purchases are simulated and nothing is charged.
+// On the website nothing is sold: buying points to the Android app.
 import { CONFIG } from './config.js';
 import { data, update, addCoins, toast } from './state.js';
+import { unequipUnowned } from './market.js';
 
 const cap = window.Capacitor;
 const platform = cap?.getPlatform?.() || 'web';
 const apiKey = platform === 'ios' ? CONFIG.revenueCatKeyIOS : platform === 'android' ? CONFIG.revenueCatKeyAndroid : '';
 const isNative = !!cap?.isNativePlatform?.();
-// native = real store billing; unconfigured = app build without keys (no purchases); demo = website
+// native = real store billing; unconfigured = app build without keys (no purchases); demo = website (shows the app offer)
 export const mode = isNative ? (apiKey ? 'native' : 'unconfigured') : 'demo';
+// The website used to grant Pro in a demo. Only the store builds unlock it now, so clear what the demo left behind.
+if (mode === 'demo' && data.pro) { update(d => { d.pro = false; }); unequipUnowned(); }
 const storeName = platform === 'ios' ? 'the App Store' : 'Google Play';
 let Purchases = null;
 const products = {}; // key -> store product (native)
@@ -43,7 +46,7 @@ export async function refreshProducts() {
 }
 function applyCustomerInfo(info) {
   const pro = !!info?.entitlements?.active?.[CONFIG.proEntitlement];
-  if (pro !== data.pro) update(d => { d.pro = pro; });
+  if (pro !== data.pro) { update(d => { d.pro = pro; }); if (!pro) unequipUnowned(); }
   creditCoinPacks(info);
 }
 // Coin packs are consumed, so each one is credited once by counting the coin-pack purchases on record.
@@ -57,11 +60,11 @@ function creditCoinPacks(info) {
   if (n > credited) { update(d => { d.coinPacks = n; }); addCoins((n - credited) * def.coins, 'Coin pack'); }
   else if (n < credited) update(d => { d.coinPacks = n; }); // refunded packs drop off the record
 }
-// In the store builds the price comes only from the store, so the shop never shows a price it can't charge.
-export const priceOf = key => products[key]?.priceString || (mode === 'native' ? '' : CONFIG.products[key].fallbackPrice);
+// Prices come only from the store, so the shop never shows a price it can't charge. Empty until the product loads.
+export const priceOf = key => products[key]?.priceString || '';
 
-// Resolves true when the purchase went through.
-export async function buy(key, confirmDemo) {
+// Resolves true when the purchase went through. On the website, offerApp(def) explains where to buy instead.
+export async function buy(key, offerApp) {
   const def = CONFIG.products[key];
   if (mode === 'native') {
     try {
@@ -83,11 +86,8 @@ export async function buy(key, confirmDemo) {
     }
   }
   if (mode === 'unconfigured') { toast('Purchases aren’t switched on in this test build yet.'); return false; }
-  const ok = await confirmDemo(def, priceOf(key));
-  if (!ok) return false;
-  if (key === 'pro') update(d => { d.pro = true; });
-  if (key === 'coins') addCoins(def.coins, 'Coin pack');
-  return true;
+  await offerApp(def);
+  return false;
 }
 export async function restore() {
   if (mode !== 'native') { toast('Restore works in the App Store and Google Play versions.'); return; }

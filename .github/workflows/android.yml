@@ -61,4 +61,5 @@ jobs:
         with:
           name: cube-coach-release-aab
           path: android/app/build/outputs/bundle/release/app-release.aab
-          retention-days: 30
+          # The repo is public, so anyone signed in to GitHub can download artifacts: keep the signed bundle only briefly.
+          retention-days: 1
